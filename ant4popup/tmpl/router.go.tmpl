@@ -1,0 +1,17 @@
+// @BeeOverwrite YES
+// @BeeGenerateTime {{generateTime}}
+package router
+
+import (
+	"{{packagePath}}/pkg/api"
+    "{{packagePath}}/pkg/router/core"
+    "github.com/gin-gonic/gin"
+)
+
+func Init{{modelName|upperFirst}}(r gin.IRoutes) {
+    core.RegisterUrl(r,"get","{{apiPrefix}}/{{modelName}}/info",api.{{modelName|upperFirst}}Info)
+    core.RegisterUrl(r,"get","{{apiPrefix}}/{{modelName}}/list",api.{{modelName|upperFirst}}List)
+    core.RegisterUrl(r,"post","{{apiPrefix}}/{{modelName}}/create",api.{{modelName|upperFirst}}Create)
+    core.RegisterUrl(r,"post","{{apiPrefix}}/{{modelName}}/update",api.{{modelName|upperFirst}}Update)
+    core.RegisterUrl(r,"post","{{apiPrefix}}/{{modelName}}/delete",api.{{modelName|upperFirst}}Delete)
+}

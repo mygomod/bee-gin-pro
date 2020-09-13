@@ -1,0 +1,197 @@
+// @BeeOverwrite YES
+// @BeeGenerateTime {{generateTime}}
+package {{packageName}}
+
+import (
+	"github.com/jinzhu/gorm"
+	"go.uber.org/zap"
+	"{{packagePath}}/pkg/mus"
+	"{{packagePath}}/pkg/trans"
+	{% for value in packageImports %}"{{value}}"
+    {% endfor %}
+    {% if fieldCtimeExist %}
+        "time"
+    {% endif %}
+)
+
+type {{modelName|upperFirst}} struct {
+     {% for value in modelSchemas %}{% if value.Name == "deleted_at" %}{{value.Name|camelString}} *time.Time `{% if value.OrmTag != "" %}orm:"{{value.OrmTag}}"{% endif %}json:"{{value.Name|camelString|lowerFirst}}" form:"{{value.Name|camelString|lowerFirst}}"` // {{value.Comment}}
+     {% else %}{{value.Name|camelString}} {{value.GoType}} `{% if value.OrmTag != "" %}gorm:"{{value.OrmTag}}"{% endif %}json:"{{value.Name|camelString|lowerFirst}}" form:"{{value.Name|camelString|lowerFirst}}"` // {{value.Comment}}{% endif %}
+     {% endfor %}
+}
+
+type {{modelName|upperFirst}}s []*{{modelName|upperFirst}}
+
+
+func (t *{{modelName|upperFirst}}) TableName() string {
+	return "{{modelName|snakeString}}"
+}
+
+
+// Add{{modelName|upperFirst}} insert a new {{modelName|upperFirst}} into database and returns
+// last inserted Id on success.
+func {{modelName|upperFirst}}Create(db *gorm.DB,data *{{modelName|upperFirst}}) (err error) {
+    {% if fieldCtimeExist %}data.Ctime = time.Now().Unix(){% endif %}
+    {% if fieldUtimeExist %}data.Utime = time.Now().Unix(){% endif %}
+
+	if err = db.Create(data).Error; err != nil {
+		mus.Logger.Error("create {{modelName|snakeString}} error", zap.Error(err))
+		return
+	}
+	return
+}
+
+func {{modelName|upperFirst}}Update(db *gorm.DB, paramId int, ups Ups) (err error) {
+	var sql = "`{{modelPrimaryKey|snakeString}}`=?"
+	var binds = []interface{}{paramId}
+
+	if err = db.Table("{{modelName|snakeString}}").Where(sql, binds...).Updates(ups).Error; err != nil {
+		mus.Logger.Error("{{modelName|snakeString}} update error", zap.Error(err))
+		return
+	}
+	return
+}
+
+
+// UpdateX Update的扩展方法，根据Cond更新一条或多条记录
+func {{modelName|upperFirst}}UpdateX(db *gorm.DB, conds Conds, ups Ups) (err error) {
+	sql, binds := BuildQuery(conds)
+	if err = db.Table("{{modelName|snakeString}}").Where(sql, binds...).Updates(ups).Error; err != nil {
+		mus.Logger.Error("{{modelName|snakeString}} update error", zap.Error(err))
+		return
+	}
+	return
+}
+
+// Delete 根据主键删除一条记录。如果有delete_time则软删除，否则硬删除。
+func {{modelName|upperFirst}}Delete(db *gorm.DB, paramId int) (err error) {
+	var sql = "`{{modelPrimaryKey|snakeString}}`=?"
+	var binds = []interface{}{paramId}
+
+    {% if fieldDtimeExist %}
+        if err = db.Table("{{modelName|snakeString}}").Where(sql, binds...).Updates(map[string]interface{}{
+            "dtime":time.Now().Unix(),
+        }).Error; err != nil {
+            mus.Logger.Error("{{modelName|snakeString}} delete error", zap.Error(err))
+            return
+        }
+    {% else %}
+        if err = db.Table("{{modelName|snakeString}}").Where(sql, binds...).Delete(&{{modelName|upperFirst}}{}).Error; err != nil {
+            mus.Logger.Error("{{modelName|snakeString}} delete error", zap.Error(err))
+            return
+        }
+    {% endif %}
+	return
+}
+
+// DeleteX Delete的扩展方法，根据Cond删除一条或多条记录。如果有delete_time则软删除，否则硬删除。
+func {{modelName|upperFirst}}DeleteX(db *gorm.DB, conds Conds) (err error) {
+	sql, binds := BuildQuery(conds)
+
+    {% if fieldDtimeExist %}
+        if err = db.Table("{{modelName|snakeString}}").Where(sql, binds...).Updates(map[string]interface{}{
+            "dtime":time.Now().Unix(),
+        }).Error; err != nil {
+            mus.Logger.Error("{{modelName|snakeString}} delete error", zap.Error(err))
+            return
+        }
+    {% else %}
+        if err = db.Table("{{modelName|snakeString}}").Where(sql, binds...).Delete(&{{modelName|upperFirst}}{}).Error; err != nil {
+            mus.Logger.Error("{{modelName|snakeString}} delete error", zap.Error(err))
+            return
+        }
+    {% endif %}
+	return
+}
+
+// Info 根据PRI查询单条记录
+func {{modelName|upperFirst}}Info(db *gorm.DB, paramId int) (resp {{modelName|upperFirst}}, err error) {
+    {% if fieldDtimeExist %}
+        var sql = "`{{modelPrimaryKey|snakeString}}`= ? and dtime = 0"
+    {% else %}
+        var sql = "`{{modelPrimaryKey|snakeString}}`= ?"
+    {% endif %}
+	var binds = []interface{}{paramId}
+
+	if err = db.Table("{{modelName|snakeString}}").Where(sql, binds...).First(&resp).Error; err != nil {
+		mus.Logger.Error("{{modelName|snakeString}} info error", zap.Error(err))
+		return
+	}
+	return
+}
+
+// InfoX Info的扩展方法，根据Cond查询单条记录
+func {{modelName|upperFirst}}InfoX(db *gorm.DB, conds Conds) (resp {{modelName|upperFirst}}, err error) {
+    {% if fieldDtimeExist %}
+         conds["dtime"] = 0
+    {% endif %}
+
+	sql, binds := BuildQuery(conds)
+
+	if err = db.Table("{{modelName|snakeString}}").Where(sql, binds...).First(&resp).Error; err != nil {
+		mus.Logger.Error("{{modelName|snakeString}} info error", zap.Error(err))
+		return
+	}
+	return
+}
+
+// List 查询list，extra[0]为sorts
+func {{modelName|upperFirst}}List(conds Conds, extra ...string) (resp []*{{modelName|upperFirst}}, err error) {
+    {% if fieldDtimeExist %}
+         conds["dtime"] = 0
+    {% endif %}
+
+	sql, binds := BuildQuery(conds)
+
+	sorts := ""
+	if len(extra) >= 1 {
+		sorts = extra[0]
+	}
+	if err = mus.Db.Table("{{modelName|snakeString}}").Where(sql, binds...).Order(sorts).Find(&resp).Error; err != nil {
+		mus.Logger.Error("{{modelName|snakeString}} info error", zap.Error(err))
+		return
+	}
+	return
+}
+
+// ListMap 查询map，map遍历的时候是无序的，所以指定sorts参数没有意义
+func {{modelName|upperFirst}}ListMap(conds Conds) (resp map[int]*{{modelName|upperFirst}}, err error) {
+    {% if fieldDtimeExist %}
+         conds["dtime"] = 0
+    {% endif %}
+
+	sql, binds := BuildQuery(conds)
+
+	mysqlSlice := make([]*{{modelName|upperFirst}}, 0)
+	resp = make(map[int]*{{modelName|upperFirst}}, 0)
+	if err = mus.Db.Table("{{modelName|snakeString}}").Where(sql, binds...).Find(&mysqlSlice).Error; err != nil {
+		mus.Logger.Error("{{modelName|snakeString}} info error", zap.Error(err))
+		return
+	}
+	for _, value := range mysqlSlice {
+		resp[value.{{modelPrimaryKey}}] = value
+	}
+	return
+}
+
+// ListPage 根据分页条件查询list
+func {{modelName|upperFirst}}ListPage( conds Conds, reqList *trans.ReqPage) (total int, respList {{modelName|upperFirst}}s) {
+    respList = make({{modelName|upperFirst}}s,0)
+    {% if fieldDtimeExist %}
+         conds["dtime"] = 0
+    {% endif %}
+	if reqList.PageSize == 0 {
+		reqList.PageSize = 10
+	}
+	if reqList.Current == 0 {
+		reqList.Current = 1
+	}
+	sql, binds := BuildQuery(conds)
+
+	db := mus.Db.Table("{{modelName|snakeString}}").Where(sql, binds...)
+	respList = make([]*{{modelName|upperFirst}}, 0)
+	db.Count(&total)
+	db.Order(reqList.Sort).Offset((reqList.Current - 1) * reqList.PageSize).Limit(reqList.PageSize).Find(&respList)
+	return
+}
+

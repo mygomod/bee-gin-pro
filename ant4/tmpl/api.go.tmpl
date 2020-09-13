@@ -1,0 +1,110 @@
+// @BeeOverwrite YES
+// @BeeGenerateTime {{generateTime}}
+package {{packageName}}
+
+import (
+	"{{packagePath}}/pkg/model"
+	"{{packagePath}}/pkg/mus"
+	"{{packagePath}}/pkg/router/core"
+	"{{packagePath}}/pkg/trans"
+	"github.com/spf13/cast"
+)
+
+func {{modelName|upperFirst}}List(c *core.Context) {
+    req := &trans.ReqPage{}
+	if err := c.Bind(req); err != nil {
+		c.JSONErrTips("参数错误", err)
+		return
+	}
+
+	query := model.Conds{}
+
+
+    {% for value in modelSchemas %}
+    {% if value.Orm != "-" %}
+    if v := c.Query("{{value.Name|camelString|lowerFirst}}"); v != "" {
+        query["{{value.Name|camelString|lowerFirst}}"] = v
+    }
+    {% endif %}
+    {% endfor %}
+
+	total, list := model.{{modelName|upperFirst}}ListPage(query, req)
+	c.JSONList(list, req.Current, req.PageSize, total)
+}
+
+
+
+func {{modelName|upperFirst}}Info(c *core.Context) {
+	reqId := cast.ToInt(c.Query("{{modelPrimaryKey|snakeString}}"))
+	if reqId == 0 {
+	    c.JSONErrTips("request is error",nil)
+		return
+	}
+
+    info, _ := model.{{modelName|upperFirst}}Info(mus.Db, reqId)
+
+	c.JSONOK(info)
+}
+
+func {{modelName|upperFirst}}Create(c *core.Context) {
+    req := &model.{{modelName|upperFirst}}{}
+	if err := c.Bind(req); err != nil {
+		c.JSONErrTips("参数错误", err)
+		return
+	}
+
+    err := model.{{modelName|upperFirst}}Create(mus.Db, req)
+    if err != nil {
+        c.JSONErrTips("创建失败", err)
+        return
+    }
+	c.JSONOK(req)
+}
+
+
+func {{modelName|upperFirst}}Delete(c *core.Context) {
+     reqJson := make(map[string]interface{}, 0)
+     err := c.Bind(&reqJson)
+     if err != nil {
+         c.JSONErrTips("request is error: "+err.Error(), err)
+         return
+     }
+
+     id := cast.ToInt(reqJson["{{modelPrimaryKey|snakeString}}"])
+     if id == 0 {
+         c.JSONErrTips("id is error: ", nil)
+         return
+     }
+
+
+    err = model.{{modelName|upperFirst}}Delete(mus.Db, id)
+    if err != nil {
+        c.JSONErrTips("删除失败", err)
+        return
+    }
+	c.JSONOK()
+}
+
+
+func {{modelName|upperFirst}}Update(c *core.Context) {
+    reqJson := make(map[string]interface{}, 0)
+    err := c.Bind(&reqJson)
+    if err != nil {
+        c.JSONErrTips("request is error: "+err.Error(), err)
+        return
+    }
+
+    id := cast.ToInt(reqJson["{{modelPrimaryKey|snakeString}}"])
+    if id == 0 {
+        c.JSONErrTips("id is error: ", nil)
+        return
+    }
+
+
+    err = model.{{modelName|upperFirst}}Update(mus.Db, id, reqJson)
+    if err != nil {
+        c.JSONErrTips("更新失败", err)
+        return
+    }
+	c.JSONOK()
+}

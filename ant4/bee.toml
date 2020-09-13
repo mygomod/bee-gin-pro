@@ -1,0 +1,67 @@
+renderPath = "tmpl"
+[default]
+   pathBeego = "."
+   pathAnt = "."
+[[descriptor]]
+    module = "api"
+    srcName = "bee_default_api.go.tmpl"
+    dstPath = "{{pathBeego}}/pkg/api/bee_default_api.go"
+    once = true
+[[descriptor]]
+    module = "api"
+    srcName = "api.go.tmpl"
+    dstPath = "{{pathBeego}}/pkg/api/{{modelName}}.go"
+[[descriptor]]
+    module = "model"
+    srcName = "bee_default_model.go.tmpl"
+    dstPath = "{{pathBeego}}/pkg/model/bee_default_model.go"
+    once = true
+[[descriptor]]
+    module = "trans"
+    srcName = "trans.go.tmpl"
+    dstPath = "{{pathBeego}}/pkg/trans/trans.go"
+    once = true
+[[descriptor]]
+    module = "core"
+    srcName = "core.go.tmpl"
+    dstPath = "{{pathBeego}}/pkg/router/core/core.go"
+    once = true
+[[descriptor]]
+    module = "model"
+    srcName = "model.go.tmpl"
+    dstPath = "{{pathBeego}}/pkg/model/{{modelName}}.go"
+[[descriptor]]
+    module = "router"
+    srcName = "router.go.tmpl"
+    dstPath = "{{pathBeego}}/pkg/router/{{modelName}}.go"
+[[descriptor]]
+    module = "antList"
+    srcName = "list.tsx.tmpl"
+    dstPath = "{{pathAnt}}/{{modelName}}/list.tsx"
+[[descriptor]]
+    module = "antForm"
+    srcName = "formconfig.tsx.tmpl"
+    dstPath = "{{pathAnt}}/{{modelName}}/formconfig.tsx"
+[[descriptor]]
+    module = "antCreate"
+    srcName = "create.tsx.tmpl"
+    dstPath = "{{pathAnt}}/{{modelName}}/create.tsx"
+[[descriptor]]
+    module = "antUpdate"
+    srcName = "update.tsx.tmpl"
+    dstPath = "{{pathAnt}}/{{modelName}}/update.tsx"
+[[descriptor]]
+    module = "antInfo"
+    srcName = "info.tsx.tmpl"
+    dstPath = "{{pathAnt}}/{{modelName}}/info.tsx"
+[[descriptor]]
+    module = "antUp"
+    srcName = "up.sql.tmpl"
+    dstPath = "{{pathBeego}}/scripts/sql/{{modelName}}_up.sql"
+    script = "bee pro migration --sql={{pathBeego}}/scripts/sql/{{modelName}}_up.sql"
+[[descriptor]]
+    module = "antDown"
+    srcName = "down.sql.tmpl"
+    dstPath = "{{pathBeego}}/scripts/sql/{{modelName}}_down.sql"
+
+

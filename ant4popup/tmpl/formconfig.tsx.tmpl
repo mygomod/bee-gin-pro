@@ -1,0 +1,70 @@
+// @BeeOverwrite YES
+// @BeeGenerateTime {{generateTime}}
+import {Form, Input, Modal} from 'antd';
+import React, { useEffect } from "react";
+interface ListFormProps {
+  modalVisible: boolean;
+  formTitle: string;
+  initialValues: {};
+  onSubmit: () => void;
+  onCancel: () => void;
+}
+
+const formLayout = {
+  labelCol: { span: 7 },
+  wrapperCol: { span: 13 },
+};
+
+const ListForm: React.FC<ListFormProps> = (props) => {
+  const { modalVisible, onCancel, onSubmit, initialValues, formTitle } = props;
+  const [form] = Form.useForm();
+
+  useEffect(() => {
+    if (form && !modalVisible) {
+      form.resetFields();
+    }
+  }, [modalVisible]);
+
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue({
+        ...initialValues,
+      });
+    }
+  }, [initialValues]);
+
+  const handleSubmit = () => {
+    if (!form) return;
+    form.submit();
+  };
+
+  const modalFooter = { okText: '保存', onOk: handleSubmit, onCancel:onCancel }
+
+  return (
+      <Modal
+        destroyOnClose
+        title={formTitle}
+        visible={modalVisible}
+        {...modalFooter}
+      >
+        <Form
+            {...formLayout}
+            form={form}
+            onFinish={onSubmit}
+            scrollToFirstError
+        >
+            {% for value in modelSchemas %}
+            {% if value.Orm != "-" %}
+              <Form.Item
+                  name="{{value.Name|camelString|lowerFirst}}"
+                  label="{{value.Comment}}"
+                >
+                  <Input />
+                </Form.Item>
+            {% endif %}
+            {% endfor %}
+        </Form>
+      </Modal>
+  );
+};
+export default ListForm;

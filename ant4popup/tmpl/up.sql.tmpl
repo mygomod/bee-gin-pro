@@ -1,0 +1,12 @@
+-- @BeeOverwrite YES
+-- @BeeGenerateTime {{generateTime}}
+CREATE TABLE `{{modelName|snakeString}}` (
+     {% for value in modelSchemas %}
+        {% if value.Name == "deleted_at" %}
+            `deleted_at` datetime NULL,
+        {% else %}
+            {% if value.OrmTag != "-" %}`{{value.Name|snakeString}}` {% if value.MysqlType == "int(11) DEFAULT NULL" %}int(11) NOT NULL{% else %}{{value.MysqlType}}{% endif %},{% endif %}
+        {% endif %}
+     {% endfor %}
+     {% for value in modelSchemas %}{% if value.ColumnKey == "PRI" %}PRIMARY KEY (`{{value.Name|snakeString}}`){% endif %}{% endfor %}
+)
